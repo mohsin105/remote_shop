@@ -1,0 +1,4 @@
+shop_env/
+__pycache__/
+.mypy_cache/
+*.db
