@@ -7,11 +7,11 @@ from datetime import datetime
 class Product(Base):
     __tablename__ = "products"
 
-    id = Column(Integer, primary_key= True)
+    id = Column(Integer, primary_key= True, autoincrement=True)
     name = Column(String(150))
     description = Column(Text)
     category_id = Column(Integer,ForeignKey("categories.id") )
-    cateogry = relationship("Category", back_populates="products")
+    category = relationship("Category", back_populates="products")
     price = Column(Numeric(10, 2))
     # image = Column
     stock = Column(Integer)
@@ -22,7 +22,7 @@ class Product(Base):
 class Category(Base):
     __tablename__ = "categories"
 
-    id = Column(Integer, primary_key= True)
+    id = Column(Integer, primary_key= True, autoincrement=True)
     name = Column(String(80))
     description = Column(Text)
     products = relationship("Product", back_populates= "category")
