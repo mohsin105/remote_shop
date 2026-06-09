@@ -27,3 +27,22 @@ class Category(Base):
     description = Column(Text)
     products = relationship("Product", back_populates= "category")
     created_at = Column(DateTime, default= datetime.utcnow)
+
+"""
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(Integer, primary_key=True, autoincrement= True)
+    product_id = Column(Integer, ForeignKey("products.id"))
+    product = relationship("Product", back_populates="reviews")
+
+    user_id = Column(Integer , ForeignKey("users.id"))
+    user = relationship("User")
+
+    content = Column(Text)
+
+    created_at = Column(DateTime, default= datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+"""

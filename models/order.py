@@ -1,10 +1,11 @@
 ##Cart and Order related DB Models using SQLAlchemy
-"""
+
 from database.session import Base
 from sqlalchemy import Column,Integer, String, Text, DateTime, Numeric, Float, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum
+# from models.user import User
 
 class OrderStatusEnum(str, Enum):
     NOT_PAID ='Not Paid'
@@ -16,17 +17,17 @@ class OrderStatusEnum(str, Enum):
 class Cart(Base):
     __tablename__ = "carts"
 
-    id = Column(Integer, primary_key= True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique= True)
+    id = Column(Integer, primary_key= True, autoincrement= True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique= True)  #o2o relation
     user = relationship("User", back_populates="cart")
-    cartItems = relationship("CartItem", back_populates= "cart")
+    items = relationship("CartItem", back_populates= "cart", cascade="all, delete-orphan")
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default= datetime.utcnow)
 
 class CartItem(Base):
     __tablename__ = "cartitems"
 
-    id = Column(Integer, primary_key= True)
+    id = Column(Integer, primary_key= True, autoincrement=True)
     #Relation with Cart Model
     cart_id = Column(Integer, ForeignKey("carts.id"))   #The SQL DB Connection
     cart = relationship("Cart", back_populates="items") #The orm connection
@@ -40,12 +41,14 @@ class CartItem(Base):
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default= datetime.utcnow)
 
+
 class Order(Base):
     __tablename__ = "orders"
 
-    id = Column(Integer, primary_key= True)
+    id = Column(Integer, primary_key= True, autoincrement=True)
     total_price = Column(Numeric(10,2))
     status = Column(SQLEnum(OrderStatusEnum), default= OrderStatusEnum.NOT_PAID)
+    items = relationship("OrderItem", back_populates="order")
     
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="orders")
@@ -57,7 +60,7 @@ class Order(Base):
 class OrderItem(Base):
     __tablename__ = "orderitems"
 
-    id = Column(Integer, primary_key= True)
+    id = Column(Integer, primary_key= True, autoincrement= True)
 
     #Relation with Order Model
     order_id = Column(Integer, ForeignKey("orders.id"))
@@ -74,4 +77,5 @@ class OrderItem(Base):
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default= datetime.utcnow)
 
+"""
 """

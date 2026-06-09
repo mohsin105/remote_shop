@@ -1,0 +1,6 @@
+Future Planning -> 
+    - AI Product Description Generator
+    - On Order Creation 
+        - Email Notifications
+        - Generate PDF Invoice
+    - AI Product Search Assistant

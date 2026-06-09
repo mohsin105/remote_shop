@@ -79,3 +79,12 @@ def user_dashboard(current_user : dict = Depends(require_roles(["user"]))):
 def admin_dashboard(current_user: dict = Depends(require_roles(["admin"]))):
     return {"message": f"Welcome {current_user.get("username")} to Admin Dashboard, as your role is {current_user.get("role")} "}
 
+
+
+@router.patch("/profile/update")
+def update_profile():
+    pass
+
+@router.patch("/profile/password-change")
+def change_password():
+    pass

@@ -1,6 +1,6 @@
 #Product related Pydantic Models
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Annotated
 
@@ -20,6 +20,11 @@ class ProductSchema(BaseModel):
     created_at : datetime
     updated_at : datetime
 
+class SimpleProductSchema(BaseModel):
+    id: int
+    name :str
+    # description : str
+    price : float
 
 
 class CreateProductSchema(BaseModel):
@@ -50,4 +55,28 @@ class CreateCategorySchema(BaseModel):
     description : str
 
 """
+
+class ReviewListSchema(BaseModel):
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    id: int
+    product_id:int 
+    product : SimpleProductSchema
+    user_id : int
+    user : SimpleUserSchema
+    content :str
+    created_at: datetime
+    updated_at: datetime
+
+class ReviewCreateSchema(BaseModel):
+    product_id:int
+    user_id:int
+    content:str
+
+class ReviewUpdateSchema(BaseModel):
+    content: str
+
+
 """

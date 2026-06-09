@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum
+# from models.order import Cart
 
 
 class UserRoleEnum(str, Enum):
@@ -27,3 +28,6 @@ class User(Base):
 
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default=  datetime.utcnow)
+
+    cart = relationship("Cart", back_populates="user" )
+    orders = relationship("Order", back_populates="user")

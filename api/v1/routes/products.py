@@ -33,7 +33,7 @@ def product_details(product_id: int, db : Session = Depends(get_db)):
     return product
     
 
-@router.post("/products")
+@router.post("/products", response_model=ProductSchema)
 def create_product(given_obj : CreateProductSchema, db:Session = Depends(get_db)):
     categoryId = given_obj.category_id
     categoryObj = db.get(Category, categoryId)
@@ -49,7 +49,7 @@ def create_product(given_obj : CreateProductSchema, db:Session = Depends(get_db)
     db.refresh(new_product)
     return new_product
 
-@router.patch("/products/{product_id}")
+@router.patch("/products/{product_id}", response_model= ProductSchema)
 def update_product(
     product_id: int, 
     product_payload: UpdateProductSchema, 
@@ -99,7 +99,7 @@ def specific_category(category_id : int, db : Session = Depends(get_db)):
     # category = db.execute(stmt).scalar_one()
     return category
 
-@router.post("/categories")
+@router.post("/categories", response_model=CategorySchema)
 def create_category(inputted_category : CreateCategorySchema, db:Session = Depends(get_db)):
     new_category = Category(
         name = inputted_category.name, 
