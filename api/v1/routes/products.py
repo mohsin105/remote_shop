@@ -4,8 +4,10 @@ from fastapi import Depends, status, HTTPException, APIRouter
 from database.session import get_db
 from models.product import Product , Category
 from schemas.product import CategorySchema, CreateCategorySchema, ProductSchema, CreateProductSchema, UpdateProductSchema
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
+from services.product_service import ProductService, CategoryService
+from core.dependencies import get_current_user
 
 router = APIRouter(
     # prefix="/products",
@@ -16,37 +18,19 @@ router = APIRouter(
 
 @router.get("/products", response_model=list[ProductSchema])
 def get_products(db : Session = Depends(get_db)):
-    #product list
-    # stmt = select(Product)
-    stmt = select(Product).join(Category)  #Naive Join approach. 
-    products = db.execute(stmt).scalars().all()
+    #product list 
+    products = ProductService.product_list(db)
     return products
 
 @router.get("/products/{product_id}", response_model=ProductSchema)
 def product_details(product_id: int, db : Session = Depends(get_db)):
-    #retrieve single product
-    # stmt = select(Product).where(Product.id == product_id)
-    # product = db.execute(stmt).scalar_one()
-    product = db.get(Product, product_id) # querying via primary key
-    if not product:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="Product Not Found")
+    product = ProductService.specific_product(product_id, db)
     return product
     
 
 @router.post("/products", response_model=ProductSchema)
 def create_product(given_obj : CreateProductSchema, db:Session = Depends(get_db)):
-    categoryId = given_obj.category_id
-    categoryObj = db.get(Category, categoryId)
-    new_product = Product(
-        name = given_obj.name,
-        description = given_obj.description,
-        price = given_obj.price,
-        stock = given_obj.stock,
-        category = categoryObj
-    )
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
+    new_product = ProductService.create_new_product(given_obj, db)
     return new_product
 
 @router.patch("/products/{product_id}", response_model= ProductSchema)
@@ -55,21 +39,7 @@ def update_product(
     product_payload: UpdateProductSchema, 
     db:Session = Depends(get_db)
 ):
-    productObj = db.get(Product, product_id)
-    if not productObj:
-        raise HTTPException(
-            status_code= status.HTTP_404_NOT_FOUND, detail= "Product Not Found"
-        )
-    # print("Original Payload-> ", product_payload)
-    #Parital Update the product
-    update_data = product_payload.model_dump(exclude_unset=True)  #exlucding the fields that were not given
-
-    # print("Clean Excluded Payload -> ", update_data)
-    #Updating the attributes of the productObject
-    for field, value in update_data.items():
-        setattr(productObj, field, value)
-    db.commit()
-    db.refresh(productObj)
+    productObj = ProductService.preform_product_update(product_id, product_payload, db)
     return productObj
 
 
@@ -81,33 +51,21 @@ def delete_product(product_id :int, db: Session = Depends(get_db)):
     db.commit()
 
 
-"""  Category Related Endpoints """
+"""  Category Related CRUD  Endpoints -------->     """
 
 @router.get("/categories", response_model=list[CategorySchema])
-def get_categories(db: Session = Depends(get_db)):
-    stmt = select(Category)
-    categories = db.execute(stmt).scalars().all()
+def get_categories(categories = Depends(CategoryService.category_list)):
     return categories
     
 
 @router.get("/categories/{category_id}", response_model=CategorySchema)
 def specific_category(category_id : int, db : Session = Depends(get_db)):
-    #Process-1  ---> 
-    category = db.get(Category, category_id)
-    #Process-2 ---> 
-    # stmt = select(Category).where(Category.id == category_id)
-    # category = db.execute(stmt).scalar_one()
+    category = CategoryService.category_details(category_id, db)
     return category
 
 @router.post("/categories", response_model=CategorySchema)
 def create_category(inputted_category : CreateCategorySchema, db:Session = Depends(get_db)):
-    new_category = Category(
-        name = inputted_category.name, 
-        description = inputted_category.description
-    )
-    db.add(new_category)
-    db.commit()
-    db.refresh(new_category)
+    new_category = CategoryService.create_new_category(inputted_category, db)
     return new_category
 
 
@@ -117,14 +75,7 @@ def update_category(
     updated_obj : CreateCategorySchema, 
     db: Session = Depends(get_db)
 ):
-    category_obj = db.get(Category, category_id)
-    if updated_obj.name and updated_obj.name != "string":
-        category_obj.name = updated_obj.name
-    if updated_obj.description and updated_obj.description != "string":
-        category_obj.description = updated_obj.description
-    
-    db.commit()
-    db.refresh(category_obj)
+    category_obj = CategoryService.preform_category_update(category_id, updated_obj, db)
     return category_obj
 
 @router.delete("/categories/{category_id}")
@@ -132,5 +83,43 @@ def delete_category(category_id : int, db: Session = Depends(get_db)):
     category_obj = db.get(Category, category_id)
     db.delete(category_obj)
     db.commit()
+
+# @router.delete("/categories/test_bulk_delete")
+# def delete_bulk_categories(db:Session = Depends(get_db)):
+#     stmt = delete(Category).where(Category.id >22)
+#     db.execute(stmt)
+#     db.commit()
+#     return {"response": "Successfully Deleted"}
+
+"""Product Review related Endpoints ----------->      """
 """
+@router.get("products/{product_id}/reviews", response_model=list[ReviewListSchema])
+def get_reviews(product_id:int, db:Session = Depends(get_db)):
+    pass
+
+
+@router.post("/products/{product_id}/reviews")
+def create_review(
+    product_id:int, current_user:dict = Depends(get_current_user),
+    payload : ReviewCreateSchema,
+    db:Session = Depends(get_db)
+):
+    pass
+
+@router.patch("/products/{product_id}/reviews/{reivew_id}", response_model=ReviewListSchema)
+def update_review(
+    product_id:int,reivew_id:int,
+    payload : ReviewUpdateSchema,
+    current_user : dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+ ):
+    pass
+
+@router.delete("/products/{product_id}/reviews/{review_id}")
+def delete_review(
+    product_id: int,
+    review_id: int,
+):
+    pass
+
 """

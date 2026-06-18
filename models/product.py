@@ -23,7 +23,7 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key= True, autoincrement=True)
-    name = Column(String(80))
+    name = Column(String(80))  #make this unique
     description = Column(Text)
     products = relationship("Product", back_populates= "category")
     created_at = Column(DateTime, default= datetime.utcnow)
@@ -39,6 +39,7 @@ class Review(Base):
     user_id = Column(Integer , ForeignKey("users.id"))
     user = relationship("User")
 
+    rating = Column(Integer)
     content = Column(Text)
 
     created_at = Column(DateTime, default= datetime.utcnow)

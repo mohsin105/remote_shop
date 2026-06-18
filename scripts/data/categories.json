@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Home & Kitchen",
+    "description": "Items for cooking, dining, and everyday household use, including cookware, small appliances, and kitchen tools."
+  },
+  {
+    "name": "Furniture",
+    "description": "Functional and decorative furnishings for living rooms, bedrooms, offices, and outdoor spaces."
+  },
+  {
+    "name": "Beauty & Personal Care",
+    "description": "Skincare, haircare, cosmetics, and grooming products used in daily personal care routines."
+  },
+  {
+    "name": "Health & Wellness",
+    "description": "Vitamins, supplements, fitness aids, and products that support physical and mental well-being."
+  },
+  {
+    "name": "Sports & Outdoors",
+    "description": "Equipment and gear for sports, fitness, camping, and outdoor recreational activities."
+  },
+  {
+    "name": "Toys & Games",
+    "description": "Playthings, board games, puzzles, and entertainment items designed for children and adults."
+  },
+  {
+    "name": "Books & Media",
+    "description": "Printed books, eBooks, audiobooks, movies, and music in physical or digital formats."
+  },
+  {
+    "name": "Automotive",
+    "description": "Parts, accessories, tools, and maintenance products for cars, motorcycles, and other vehicles."
+  },
+  {
+    "name": "Garden & Outdoor Living",
+    "description": "Plants, gardening tools, patio furniture, and equipment for maintaining outdoor spaces."
+  },
+  {
+    "name": "Office Supplies",
+    "description": "Stationery, organizational tools, and equipment used in offices, schools, and home workspaces."
+  },
+  {
+    "name": "Pet Supplies",
+    "description": "Food, toys, grooming products, and accessories for the care of household pets."
+  },
+  {
+    "name": "Baby & Kids",
+    "description": "Products designed for infants and young children, including gear, feeding supplies, and nursery items."
+  },
+  {
+    "name": "Jewelry & Watches",
+    "description": "Necklaces, rings, bracelets, watches, and other decorative accessories worn on the body."
+  },
+  {
+    "name": "Arts & Crafts",
+    "description": "Supplies and materials for drawing, painting, sewing, and other creative hobby projects."
+  },
+  {
+    "name": "Tools & Hardware",
+    "description": "Hand tools, power tools, fasteners, and equipment used for building and repair tasks."
+  },
+  {
+    "name": "Travel & Luggage",
+    "description": "Suitcases, backpacks, travel accessories, and gear designed for trips and daily commuting."
+  },
+  {
+    "name": "Musical Instruments",
+    "description": "Instruments, accessories, and equipment for playing, recording, and performing music."
+  },
+  {
+    "name": "Footwear",
+    "description": "Shoes, boots, sandals, and other types of footwear for various occasions and activities."
+  }
+]

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 from schemas.order import CartSchema, CartItemSchema, CreateCartItemSchema, UpdateCartItemSchema, OrderItemSchema, OrderSchema, UpdateOrderSchema
 from core.dependencies import get_current_user
+from services.order_service import CartService, OrderService, PaymentService
 
 router = APIRouter(
     tags=["Orders"]
@@ -19,35 +20,17 @@ router = APIRouter(
 
 @router.get("/carts", response_model=list[CartSchema])
 def cart_list(current_user:dict = Depends(get_current_user),db:Session = Depends(get_db)):
-    user_role = current_user.get("role")
-    print("Current User-> ", current_user)
-    
-    #Admin read all. User read only his
-    if user_role == "admin":
-        stmt = select(Cart)
-    else:
-        username = current_user.get("username")
-        userstmt = select(User).where(User.username == username)
-        userObj = db.execute(userstmt).scalars().first()
-        stmt = select(Cart).where(Cart.user_id == userObj.id)
-    carts = db.execute(stmt).scalars().all()
+    carts = CartService.show_cart_list(current_user, db)
     return carts
 
 @router.get("/carts/{cart_id}", response_model= CartSchema)
 def cart_details(cart_id:int, db:Session = Depends(get_db)):
-    cart = db.get(Cart, cart_id)
+    cart = CartService.show_cart_details(cart_id, db)
     return cart
 
 @router.post("/carts", response_model= CartSchema)
 def create_cart(current_user:dict = Depends(get_current_user), db:Session = Depends(get_db)):
-    userstmt = select(User).where(User.username == current_user.get("username"))
-    userObj = db.execute(userstmt).scalars().first()
-    new_cart = Cart(
-        user_id = userObj.id
-    )
-    db.add(new_cart)
-    db.commit()
-    db.refresh(new_cart)
+    new_cart = CartService.create_new_cart(current_user, db)
     return new_cart
 
 
@@ -55,8 +38,7 @@ def create_cart(current_user:dict = Depends(get_current_user), db:Session = Depe
 
 @router.get("/cart/{cart_id}/items", response_model=list[CartItemSchema])
 def cart_items(cart_id:int, db:Session = Depends(get_db)):
-    stmt = select(CartItem).where(CartItem.cart_id == cart_id)
-    items = db.execute(stmt).scalars().all()
+    items = CartService.cart_items_list(cart_id, db)
     return items
 
 @router.post("/cart/{cart_id}/items", response_model= CartItemSchema)
@@ -66,27 +48,18 @@ def add_cartItem(
     current_user:dict = Depends(get_current_user), 
     db:Session = Depends(get_db)
 ):
-    new_cartItem = CartItem(
-        cart_id = cart_id,
-        product_id = payload.product_id,
-        quantity = payload.quantity
-    )
-    db.add(new_cartItem)
-    db.commit()
-    db.refresh(new_cartItem)
+    new_cartItem = CartService.create_new_cartItem(cart_id, payload, db)
     return new_cartItem
 
-@router.patch("/carts/{cart_id}/items/{item_id}")
+@router.patch("/carts/{cart_id}/items/{item_id}", response_model=CartItemSchema)
 def update_cartItem(
     cart_id:int, item_id:int,
     payload :UpdateCartItemSchema, 
     current_user:dict = Depends(get_current_user),  
     db:Session = Depends(get_db)
 ):
-    itemObj = db.get(CartItem, item_id)
-    itemObj.quantity = payload.quantity
-    db.commit()
-    db.refresh(itemObj)
+    itemObj = CartService.update_cartItem_quantity(cart_id, item_id, payload, db)
+    return itemObj
 
 @router.delete("/carts/{cart_id}/items/{item_id}")
 def remove_cartItem(cart_id:int,item_id: int, db:Session = Depends(get_db)):
@@ -95,11 +68,12 @@ def remove_cartItem(cart_id:int,item_id: int, db:Session = Depends(get_db)):
     db.commit()
 
 
+""" Order CRUD Route Handlers -------> """
+
 @router.get("/orders", response_model=list[OrderSchema])
 def orders_list(db:Session = Depends(get_db)):
     #Admin can see any order details. User can only see owned orders
-    stmt = select(Order).options(selectinload(Order.items))
-    orders = db.execute(stmt).scalars().all()
+    orders = OrderService.get_orders_list(db)
     return orders
 
 
@@ -107,46 +81,17 @@ def orders_list(db:Session = Depends(get_db)):
 @router.get("/orders/{order_id}", response_model= OrderSchema)
 def order_details(order_id:int , db:Session = Depends(get_db)):
     #Admin can see any order details. User can only see owned orders
-    order = db.get(Order, order_id)
+    order = OrderService.get_order_details(order_id, db)
     return order
 
 
-@router.post("/orders")
+@router.post("/orders", response_model=OrderSchema)
 def create_order(
     cart_id: int,current_user:dict = Depends(get_current_user),
     db:Session = Depends(get_db)
 ):
-    cartObj = db.get(Cart, cart_id)
-    total_price = 0
-    for item in cartObj.items:
-        total_price += item.product.price * item.quantity
-
-    if cartObj.user.username == current_user.get("username"):
-        newOrder = Order(
-            user = cartObj.user,
-            total_price = total_price
-        )
-
-        for item in cartObj.items:
-            newOrder.items.append(
-                OrderItem(
-                    # order = newOrder
-                    product_id = item.product_id,
-                    quantity = item.quantity,
-                    price = item.product.price,
-                    total_price = item.product.price * item.quantity
-
-                )
-            )
-
-        db.add(newOrder)
-        db.commit()
-        db.refresh(newOrder)
-        db.delete(cartObj)
-        db.commit()
-    else:
-        raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail="User Does Not Match")
-    pass
+    newOrder = OrderService.create_new_order(cart_id, current_user, db)
+    return newOrder
 
 
 @router.patch("/orders/{order_id}", response_model=OrderSchema)
@@ -156,10 +101,7 @@ def update_order(
     db:Session = Depends(get_db)
 ):
     #Admin can change to any status. User can only Cancel the incomplete orders
-    orderObj = db.get(Order, order_id)
-    orderObj.status = payload.status
-    db.commit()
-    db.refresh(orderObj)
+    orderObj = OrderService.preform_order_update(order_id, payload, db)
     return orderObj
 
 """

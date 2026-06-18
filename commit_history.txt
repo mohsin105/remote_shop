@@ -1,0 +1,7 @@
+9 Jun 26
+    - Cart and Order CRUD in basic level
+    - Readme.md file
+
+Date: 18 Jun 26
+    - Services system
+    - Scripts -  Bulk populating DB for Products and Category Model

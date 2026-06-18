@@ -66,6 +66,7 @@ class ReviewListSchema(BaseModel):
     product : SimpleProductSchema
     user_id : int
     user : SimpleUserSchema
+    rating :int
     content :str
     created_at: datetime
     updated_at: datetime
@@ -74,9 +75,11 @@ class ReviewCreateSchema(BaseModel):
     product_id:int
     user_id:int
     content:str
+    rating : Annotated[int, Field(ge=1, le=5)]
 
 class ReviewUpdateSchema(BaseModel):
     content: str
+    rating : Annotated[int, Field(ge=1, le=5)]
 
 
 """

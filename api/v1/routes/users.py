@@ -9,6 +9,7 @@ from models.user import User
 from core.security import hash_password, verify_password, create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
 from core.dependencies import get_current_user, require_roles
+from services.user_service import UserService
 
 
 router = APIRouter(
