@@ -3,21 +3,20 @@ from fastapi import Depends, status, HTTPException
 from models.order import Cart, CartItem, Order, OrderItem
 from models.user import User
 from sqlalchemy import select
+from core.dependencies import get_current_user
 
 class CartService:
 
     @staticmethod
-    def show_cart_list(current_user, db:Session):
-        user_role = current_user.get("role")
-        print("Current User-> ", current_user)
+    def show_cart_list(user_token_value, db:Session):
+        user_role = user_token_value.get("role")
+        # print("Current User Token Value Decoded-> ", user_token_value)
         
         #Admin read all. User read only his
         if user_role == "admin":
             stmt = select(Cart)
         else:
-            username = current_user.get("username")
-            userstmt = select(User).where(User.username == username)
-            userObj = db.execute(userstmt).scalars().first()
+            userObj = get_current_user(user_token_value,db=db)
             stmt = select(Cart).where(Cart.user_id == userObj.id)
         carts = db.execute(stmt).scalars().all()
         return carts
@@ -28,9 +27,8 @@ class CartService:
         return cart
 
     @staticmethod
-    def create_new_cart(current_user, db:Session):
-        userstmt = select(User).where(User.username == current_user.get("username"))
-        userObj = db.execute(userstmt).scalars().first()
+    def create_new_cart(user_token_value, db:Session):
+        userObj = get_current_user(user_token_value, db)
         
         new_cart = Cart(
             user_id = userObj.id
@@ -86,14 +84,14 @@ class OrderService:
         return order
 
     @staticmethod
-    def create_new_order(cart_id, current_user, db:Session):
+    def create_new_order(cart_id, user_token_value, db:Session):
         cartObj = db.get(Cart, cart_id)
         total_price = 0
         for item in cartObj.items:
             total_price += item.product.price * item.quantity
 
 
-        if cartObj.user.username == current_user.get("username"):
+        if cartObj.user.username == user_token_value.get("username"):
             newOrder = Order(
                 user = cartObj.user,
                 total_price = total_price

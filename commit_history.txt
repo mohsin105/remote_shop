@@ -5,3 +5,10 @@
 Date: 18 Jun 26
     - Services system
     - Scripts -  Bulk populating DB for Products and Category Model
+
+
+Date :
+    - Pagination, Filtering, Order, Searching . Basic approach. Without FilterSchema model
+    - User Update
+    - Get Current User and Auth refactoring 
+    - Review System Implementation

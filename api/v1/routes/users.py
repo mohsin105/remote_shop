@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, status, APIRouter
 from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from schemas.user import UserCreateSchema, UserLoginSchema, UserSchema
+from schemas.user import UserCreateSchema, UserLoginSchema, UserSchema, UserUpdateSchema
 from models.user import User
 from core.security import hash_password, verify_password, create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
@@ -61,15 +61,16 @@ def login_user(payload: OAuth2PasswordRequestForm = Depends(), db: Session = Dep
 
     return {"access_token":token, "token_type": "bearer"}
 
-
+#Just a protected Route
 @router.get("/protected")
 def protected_route(current_user : dict = Depends(require_roles(["user", "admin"]))):
     # print("Current User: -> ",current_user)
     return {"message": f"Hellow, {current_user.get("username")} | You accessed a protected route"}
 
-@router.get("/profile")
-def user_profile(current_user:dict = Depends(require_roles(["user"]))):  #require_role will fetch current user, check role, and if passed,  return the user as dicttionary
-    return {"message": f"Profile of {current_user.get("username")} role  - {current_user.get("role")}"}
+@router.get("/profile", response_model= UserSchema)
+def user_profile(current_user = Depends(get_current_user)):  
+    
+    return current_user
 
 @router.get("/user-dashboard")
 def user_dashboard(current_user : dict = Depends(require_roles(["user"]))):
@@ -82,9 +83,14 @@ def admin_dashboard(current_user: dict = Depends(require_roles(["admin"]))):
 
 
 
-@router.patch("/profile/update")
-def update_profile():
-    pass
+@router.patch("/profile/update", response_model=UserSchema)
+def update_profile(
+    payload : UserUpdateSchema,
+    current_user = Depends(get_current_user),  #User Object will be based on token. Not id/email. 
+    db : Session = Depends(get_db)
+ ):
+    updated_user = UserService.preform_profile_update(payload, current_user, db)
+    return updated_user
 
 @router.patch("/profile/password-change")
 def change_password():

@@ -37,5 +37,5 @@ class UserLoginSchema(BaseModel):
     password : str
 
 class UserUpdateSchema(BaseModel):
-    first_name :str
-    last_name: str
+    first_name :str | None = None
+    last_name: str | None = None

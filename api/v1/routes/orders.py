@@ -7,7 +7,7 @@ from models.product import Product
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 from schemas.order import CartSchema, CartItemSchema, CreateCartItemSchema, UpdateCartItemSchema, OrderItemSchema, OrderSchema, UpdateOrderSchema
-from core.dependencies import get_current_user
+from core.dependencies import get_current_user, get_token_payload
 from services.order_service import CartService, OrderService, PaymentService
 
 router = APIRouter(
@@ -19,8 +19,8 @@ router = APIRouter(
 
 
 @router.get("/carts", response_model=list[CartSchema])
-def cart_list(current_user:dict = Depends(get_current_user),db:Session = Depends(get_db)):
-    carts = CartService.show_cart_list(current_user, db)
+def cart_list(user_token_value:dict = Depends(get_token_payload),db:Session = Depends(get_db)):
+    carts = CartService.show_cart_list(user_token_value, db)
     return carts
 
 @router.get("/carts/{cart_id}", response_model= CartSchema)
@@ -29,8 +29,8 @@ def cart_details(cart_id:int, db:Session = Depends(get_db)):
     return cart
 
 @router.post("/carts", response_model= CartSchema)
-def create_cart(current_user:dict = Depends(get_current_user), db:Session = Depends(get_db)):
-    new_cart = CartService.create_new_cart(current_user, db)
+def create_cart(user_token_value:dict = Depends(get_token_payload), db:Session = Depends(get_db)):
+    new_cart = CartService.create_new_cart(user_token_value, db)
     return new_cart
 
 
@@ -45,7 +45,7 @@ def cart_items(cart_id:int, db:Session = Depends(get_db)):
 def add_cartItem(
     cart_id:int,
     payload: CreateCartItemSchema, 
-    current_user:dict = Depends(get_current_user), 
+    current_user:dict = Depends(get_token_payload), 
     db:Session = Depends(get_db)
 ):
     new_cartItem = CartService.create_new_cartItem(cart_id, payload, db)
@@ -55,7 +55,7 @@ def add_cartItem(
 def update_cartItem(
     cart_id:int, item_id:int,
     payload :UpdateCartItemSchema, 
-    current_user:dict = Depends(get_current_user),  
+    current_user:dict = Depends(get_token_payload),  
     db:Session = Depends(get_db)
 ):
     itemObj = CartService.update_cartItem_quantity(cart_id, item_id, payload, db)
@@ -87,17 +87,17 @@ def order_details(order_id:int , db:Session = Depends(get_db)):
 
 @router.post("/orders", response_model=OrderSchema)
 def create_order(
-    cart_id: int,current_user:dict = Depends(get_current_user),
+    cart_id: int,user_token_value:dict = Depends(get_token_payload),
     db:Session = Depends(get_db)
 ):
-    newOrder = OrderService.create_new_order(cart_id, current_user, db)
+    newOrder = OrderService.create_new_order(cart_id, user_token_value, db)
     return newOrder
 
 
 @router.patch("/orders/{order_id}", response_model=OrderSchema)
 def update_order(
     order_id:int,payload :UpdateOrderSchema  ,
-    current_user:dict = Depends(get_current_user),
+    user_token_value:dict = Depends(get_token_payload),
     db:Session = Depends(get_db)
 ):
     #Admin can change to any status. User can only Cancel the incomplete orders

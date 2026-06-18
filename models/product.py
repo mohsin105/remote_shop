@@ -1,6 +1,6 @@
 #Product related DB Models using SQLAlchemy
 from database.session import Base
-from sqlalchemy import Column, Integer, DateTime, Text, String, Numeric, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, Text, String, Numeric, ForeignKey, CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -17,6 +17,7 @@ class Product(Base):
     stock = Column(Integer)
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default= datetime.utcnow)
+    reviews = relationship("Review", back_populates="product")
 
 
 class Category(Base):
@@ -28,7 +29,7 @@ class Category(Base):
     products = relationship("Product", back_populates= "category")
     created_at = Column(DateTime, default= datetime.utcnow)
 
-"""
+
 class Review(Base):
     __tablename__ = "reviews"
 
@@ -45,5 +46,17 @@ class Review(Base):
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        CheckConstraint(
+            "rating >= 1 AND rating <= 5",
+            name="rating_range"
+        ),
+        UniqueConstraint(
+            "user_id",
+            "product_id",
+            name="unique_review"
+        )
+    )
 
+"""
 """

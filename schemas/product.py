@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Annotated
+from schemas.user import SimpleUserSchema
 
 class SimpleCategorySchema(BaseModel):
     id: int
@@ -54,7 +55,7 @@ class CreateCategorySchema(BaseModel):
     name :Annotated[str, Field(max_length= 80)]
     description : str
 
-"""
+
 
 class ReviewListSchema(BaseModel):
     model_config = ConfigDict(
@@ -72,8 +73,8 @@ class ReviewListSchema(BaseModel):
     updated_at: datetime
 
 class ReviewCreateSchema(BaseModel):
-    product_id:int
-    user_id:int
+    product_id:Annotated[int , Field(ge=1)]
+    user_id:Annotated[int, Field(ge=1)]
     content:str
     rating : Annotated[int, Field(ge=1, le=5)]
 
@@ -81,5 +82,5 @@ class ReviewUpdateSchema(BaseModel):
     content: str
     rating : Annotated[int, Field(ge=1, le=5)]
 
-
+"""
 """
