@@ -1,6 +1,6 @@
 #User related Endpoint handler functions
 from database.session import get_db
-from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi import Depends, HTTPException, status, APIRouter, Request, Response
 from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -10,7 +10,7 @@ from core.security import hash_password, verify_password, create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
 from core.dependencies import get_current_user, require_roles
 from services.user_service import UserService
-
+from fastapi.responses import JSONResponse
 
 router = APIRouter(
     tags=["Users"]
@@ -44,22 +44,26 @@ def register_user(user: UserCreateSchema, db:Session = Depends(get_db) ):
     return user
 
 @router.post("/login")
-def login_user(payload: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    #Check user existence -> 
-    existing_user = db.query(User).filter(User.username == payload.username).first()
-    if not existing_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User Does not Exists")
-    
-    #password verification
-    if not verify_password(payload.password, existing_user.hashed_password):
-        raise HTTPException(status_code= status.HTTP_401_UNAUTHORIZED, detail="Password Do Not Match")
-    
+def login_user(payload: UserLoginSchema,response:Response, db: Session = Depends(get_db)):
+    token = UserService.perform_login(payload, db=db)
 
-    #User Exists and Password Verified; Now Create JWT Access Token -> 
-    token_data = {"sub": existing_user.username, "role":existing_user.role}  #this "sub" key is vital
-    token = create_access_token(token_data)
+    # response = JSONResponse({
+    #     "message":"Login Successfull. Cookie sent"
+    # })
 
-    return {"access_token":token, "token_type": "bearer"}
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=False, #True only for https, not http
+        samesite="lax",  #samsite lax and secure false is the combo for local testing
+        # samesite="none",  #none requires secure true
+    )
+
+    # return response
+    return {"message":"Login Successfull. Cookie sent"}
+
+    # return {"access_token":token, "token_type": "bearer"}
 
 #Just a protected Route
 @router.get("/protected")
@@ -71,6 +75,11 @@ def protected_route(current_user : dict = Depends(require_roles(["user", "admin"
 def user_profile(current_user = Depends(get_current_user)):  
     
     return current_user
+
+@router.post("/logout")
+def logout_user(response : Response):
+    response.delete_cookie("access_token")
+    return {"message":"User Logged Out"}
 
 @router.get("/user-dashboard")
 def user_dashboard(current_user : dict = Depends(require_roles(["user"]))):
