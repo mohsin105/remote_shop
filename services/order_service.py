@@ -29,7 +29,16 @@ class CartService:
     @staticmethod
     def create_new_cart(user_token_value, db:Session):
         userObj = get_current_user(user_token_value, db)
+        #Check existence, if exists, return the existing one. Only create new if No cart for the user exists
+        print("Creating new Cart service: ")
+        stmt = select(Cart).where(Cart.user_id == userObj.id)
+        existing_cart = db.execute(stmt).scalars().first()
+        if existing_cart:
+            print("Cart Already exists")
+            print("Existing Cart: ->",existing_cart)
+            return existing_cart
         
+        print("New Cart Creation -->:")
         new_cart = Cart(
             user_id = userObj.id
         )

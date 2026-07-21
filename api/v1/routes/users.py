@@ -6,11 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from schemas.user import UserCreateSchema, UserLoginSchema, UserSchema, UserUpdateSchema
 from models.user import User
-from core.security import hash_password, verify_password, create_access_token
-from fastapi.security import OAuth2PasswordRequestForm
+from core.security import hash_password
 from core.dependencies import get_current_user, require_roles
 from services.user_service import UserService
-from fastapi.responses import JSONResponse
 
 router = APIRouter(
     tags=["Users"]
@@ -47,9 +45,6 @@ def register_user(user: UserCreateSchema, db:Session = Depends(get_db) ):
 def login_user(payload: UserLoginSchema,response:Response, db: Session = Depends(get_db)):
     token = UserService.perform_login(payload, db=db)
 
-    # response = JSONResponse({
-    #     "message":"Login Successfull. Cookie sent"
-    # })
 
     response.set_cookie(
         key="access_token",
@@ -57,13 +52,11 @@ def login_user(payload: UserLoginSchema,response:Response, db: Session = Depends
         httponly=True,
         secure=False, #True only for https, not http
         samesite="lax",  #samsite lax and secure false is the combo for local testing
-        # samesite="none",  #none requires secure true
+                          #none requires secure true
     )
-
-    # return response
+    
     return {"message":"Login Successfull. Cookie sent"}
 
-    # return {"access_token":token, "token_type": "bearer"}
 
 #Just a protected Route
 @router.get("/protected")

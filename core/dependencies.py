@@ -8,19 +8,17 @@ from sqlalchemy import select
 from database.session import get_db
 from models.user import User
 
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-
-# def get_token_payload(access_token :str|None =  Cookie(None)):
 def get_token_payload(request: Request):
     """Decodes the Token from the Cookie of incoming-request. and returns the data inside token"""
+    print("Trying to decode token")
     credential_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, 
         detail="Unauthorized. Not Authenticated", 
         # headers={"WWW-Authenticate": "Bearer"}
     )
-
+    # print("Cookies in FastAPI: -> ",request.cookies)
     access_token = request.cookies.get("access_token")
+    # print("The access Token: -> ", access_token)
     if not access_token:
         print("Access token not found. ")
         raise credential_exception
@@ -30,7 +28,7 @@ def get_token_payload(request: Request):
             settings.SECRET_KEY,
             algorithms=settings.ALGORITHM
         ) #decode the token and extract values encrypted inside it.
-        print("Token:", payload)
+        # print("Token:", payload)
         username :str = payload.get("sub")
         role : str = payload.get("role")
         if username is None or role is None:

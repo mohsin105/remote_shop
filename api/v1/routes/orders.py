@@ -20,6 +20,7 @@ router = APIRouter(
 
 @router.get("/carts", response_model=list[CartSchema])
 def cart_list(user_token_value:dict = Depends(get_token_payload),db:Session = Depends(get_db)):
+    print("Cart List handler -> ")
     carts = CartService.show_cart_list(user_token_value, db)
     return carts
 
@@ -30,8 +31,11 @@ def cart_details(cart_id:int, db:Session = Depends(get_db)):
 
 @router.post("/carts", response_model= CartSchema)
 def create_cart(user_token_value:dict = Depends(get_token_payload), db:Session = Depends(get_db)):
+    print("Cart creation route handler:")
     new_cart = CartService.create_new_cart(user_token_value, db)
     return new_cart
+# def create_cart():
+#     raise Exception("The endpoint atleast hit")
 
 
 """CartItem CRUD Route handlers ------->  """
@@ -48,6 +52,7 @@ def add_cartItem(
     current_user:dict = Depends(get_token_payload), 
     db:Session = Depends(get_db)
 ):
+    print("Adding cart item route handler hit ->")
     new_cartItem = CartService.create_new_cartItem(cart_id, payload, db)
     return new_cartItem
 
@@ -90,6 +95,7 @@ def create_order(
     cart_id: int,user_token_value:dict = Depends(get_token_payload),
     db:Session = Depends(get_db)
 ):
+    print("ORder creation route handler hit ->")
     newOrder = OrderService.create_new_order(cart_id, user_token_value, db)
     return newOrder
 
