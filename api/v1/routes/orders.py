@@ -6,7 +6,7 @@ from models.user import User
 from models.product import Product
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
-from schemas.order import CartSchema, CartItemSchema, CreateCartItemSchema, UpdateCartItemSchema, OrderItemSchema, OrderSchema, UpdateOrderSchema
+from schemas.order import CartSchema, CartItemSchema, CreateCartItemSchema, UpdateCartItemSchema, OrderItemSchema, OrderSchema, UpdateOrderSchema, CreateOrderSchema
 from core.dependencies import get_current_user, get_token_payload
 from services.order_service import CartService, OrderService, PaymentService
 
@@ -78,6 +78,7 @@ def remove_cartItem(cart_id:int,item_id: int, db:Session = Depends(get_db)):
 @router.get("/orders", response_model=list[OrderSchema])
 def orders_list(db:Session = Depends(get_db)):
     #Admin can see any order details. User can only see owned orders
+    print("Order List route handler hit -> ")
     orders = OrderService.get_orders_list(db)
     return orders
 
@@ -92,11 +93,12 @@ def order_details(order_id:int , db:Session = Depends(get_db)):
 
 @router.post("/orders", response_model=OrderSchema)
 def create_order(
-    cart_id: int,user_token_value:dict = Depends(get_token_payload),
+    payload: CreateOrderSchema,
+    user_token_value:dict = Depends(get_token_payload),
     db:Session = Depends(get_db)
 ):
     print("ORder creation route handler hit ->")
-    newOrder = OrderService.create_new_order(cart_id, user_token_value, db)
+    newOrder = OrderService.create_new_order(payload.cart_id, user_token_value, db)
     return newOrder
 
 

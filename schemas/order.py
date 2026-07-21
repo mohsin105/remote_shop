@@ -98,6 +98,9 @@ class OrderSchema(BaseModel):
 class UpdateOrderSchema(BaseModel):
     status : OrderStatusEnum
 
+class CreateOrderSchema(BaseModel):
+    cart_id: int
+
 
 
 
