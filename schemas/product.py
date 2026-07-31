@@ -6,11 +6,13 @@ from typing import Annotated
 from schemas.user import SimpleUserSchema
 
 class SimpleCategorySchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     name: str
     description :str
     
 class ProductSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     name :str
     description : str
@@ -20,6 +22,15 @@ class ProductSchema(BaseModel):
     category :SimpleCategorySchema
     created_at : datetime
     updated_at : datetime
+
+class ProductListSchema(BaseModel):
+    items : list[ProductSchema]
+    total_items : int
+    total_pages : int
+    page_size : int
+    page : int
+    has_next : bool
+    has_previous : bool
 
 class SimpleProductSchema(BaseModel):
     id: int

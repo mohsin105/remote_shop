@@ -3,7 +3,7 @@
 from fastapi import Depends, status, HTTPException, APIRouter
 from database.session import get_db
 from models.product import Product , Category, Review
-from schemas.product import CategorySchema, CreateCategorySchema, ProductSchema, CreateProductSchema, UpdateProductSchema, ReviewListSchema, ReviewCreateSchema, ReviewUpdateSchema
+from schemas.product import CategorySchema, CreateCategorySchema, ProductSchema, CreateProductSchema, UpdateProductSchema, ReviewListSchema, ReviewCreateSchema, ReviewUpdateSchema, ProductListSchema
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from services.product_service import ProductService, CategoryService, ReviewService
@@ -16,7 +16,8 @@ router = APIRouter(
 
 """ Product Related Endpoints  """
 
-@router.get("/products", response_model=list[ProductSchema])
+# @router.get("/products", response_model=list[ProductSchema])
+@router.get("/products", response_model=ProductListSchema)
 def get_products(
     page : int = 1,
     limit : int =20,
@@ -28,8 +29,8 @@ def get_products(
     db : Session = Depends(get_db)
 ):
     #product list 
-    products = ProductService.product_list(page,limit,name,category,price_gt, price_lt, order_by,db)
-    return products
+    product_response = ProductService.product_list(page,limit,name,category,price_gt, price_lt, order_by,db)
+    return product_response
 
 @router.get("/products/{product_id}", response_model=ProductSchema)
 def product_details(product_id: int, db : Session = Depends(get_db)):

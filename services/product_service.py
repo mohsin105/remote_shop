@@ -1,46 +1,74 @@
 #CRUD and Business Logic for Product and Category Models
+import math
 from models.product import Product , Category, Review
 from fastapi import Depends, status, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from database.session import get_db
 from core.dependencies import get_current_user
+from schemas.product import ProductListSchema, ProductSchema
 
 class ProductService:
 
     @staticmethod
     def product_list(page, limit, name,category,price_gt, price_lt,order_by, db):
-        stmt = select(Product).join(Category).limit(limit)  #Naive Join approach.
-        #Pagination -> 
-        if page != 1:
-            offsetValue = (page-1)*limit
-            stmt = stmt.offset(offsetValue)
+        stmt = select(Product).join(Category)  #Naive Join approach.
+        count_stmt = select(func.count()).select_from(Product).join(Category)
+        
         
         #Filtering by Product Name -> 
         if name is not None:
             stmt = stmt.where(Product.name.ilike(f"%{name}%")) 
+            count_stmt = count_stmt.where(Product.name.ilike(f"%{name}%"))
         #Filtering by Product Category -> 
         if category is not None:
             stmt = stmt.where(Category.name.ilike(f"%{category}%"))  #Because Join done beforehand
-        
+            count_stmt = count_stmt.where(Category.name.ilike(f"%{category}%"))
         #Price Range based filtering  -> 
         if price_gt is not None:
             stmt = stmt.where(Product.price >=price_gt)
+            count_stmt = count_stmt.where(Product.price >=price_gt)
         
         if price_lt is not None:
             stmt = stmt.where(Product.price <= price_lt)
+            count_stmt = count_stmt.where(Product.price <= price_lt)
         
         if order_by == "price":
             stmt = stmt.order_by(Product.price)
+            # count_stmt = count_stmt.order_by(Product.price)
         elif order_by == "-price":
             stmt = stmt.order_by(Product.price.desc())
         elif order_by == "created_at":
             stmt = stmt.order_by(Product.created_at)
         elif order_by == "-created_at":
             stmt = stmt.order_by(Product.created_at.desc())
+
+        #Pagination -> 
+        if page != 1:
+            offsetValue = (page-1)*limit
+            stmt = stmt.offset(offsetValue)
+
+        stmt = stmt.limit(limit)
         
+        product_count = db.scalar(count_stmt)
+        # print('Product Count=> ', product_count)
+        total_pages = math.ceil(product_count/limit)
+        # print("Total Pages Needed =>", total_pages)
         products = db.execute(stmt).scalars().all()
-        return products
+        has_next = True if page<total_pages else False
+        has_previous = True if page > 1 else False
+        next_page = page+1
+        product_items =[ProductSchema.model_validate(product) for product in products]
+        # return products
+        return ProductListSchema(
+            items=product_items,
+            total_items=product_count,
+            total_pages=total_pages,
+            page_size=limit,
+            page=page,
+            has_next=has_next,
+            has_previous=has_previous
+        )
 
     @staticmethod
     def specific_product(product_id, db):
