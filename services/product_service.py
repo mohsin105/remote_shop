@@ -1,12 +1,13 @@
 #CRUD and Business Logic for Product and Category Models
 import math
 from models.product import Product , Category, Review
-from fastapi import Depends, status, HTTPException
+from fastapi import Depends, status, HTTPException, UploadFile, File
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from database.session import get_db
 from core.dependencies import get_current_user
 from schemas.product import ProductListSchema, ProductSchema
+from pathlib import Path
 
 class ProductService:
 

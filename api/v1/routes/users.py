@@ -1,10 +1,10 @@
 #User related Endpoint handler functions
 from database.session import get_db
-from fastapi import Depends, HTTPException, status, APIRouter, Request, Response
+from fastapi import Depends, HTTPException, status, APIRouter, Request, Response, UploadFile, File
 from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from schemas.user import UserCreateSchema, UserLoginSchema, UserSchema, UserUpdateSchema
+from schemas.user import UserCreateSchema, UserLoginSchema, UserSchema, UserUpdateSchema, ProfileImageResponse
 from models.user import User
 from core.security import hash_password
 from core.dependencies import get_current_user, require_roles
@@ -45,7 +45,7 @@ def register_user(user: UserCreateSchema, db:Session = Depends(get_db) ):
 def login_user(payload: UserLoginSchema,response:Response, db: Session = Depends(get_db)):
     token = UserService.perform_login(payload, db=db)
 
-
+    #HTTPOnly Cookie system, enabled here. 
     response.set_cookie(
         key="access_token",
         value=token,
@@ -97,3 +97,13 @@ def update_profile(
 @router.patch("/profile/password-change")
 def change_password():
     pass
+
+
+@router.patch("/profile/update-image", response_model= ProfileImageResponse)
+def update_profile_image(
+    image : UploadFile,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    updated_user = UserService.perform_profile_image_update(current_user, image, db)
+    return {"profile_image_url":f"/media/profile_images/{updated_user.profile_image}"}

@@ -22,6 +22,7 @@ class User(Base):
     last_name = Column(String(20))
     address = Column(Text, nullable= True)
     phone_number = Column(String(21), nullable= True)
+    profile_image = Column(String(500), nullable=True)
 
     hashed_password = Column(String(255))
     role = Column(SQLEnum(UserRoleEnum), default= UserRoleEnum.USER)

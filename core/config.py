@@ -1,6 +1,7 @@
 #Configuration variables - Imported from env file
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
 
 
 # SECRET_KEY = os.getenv("SECRET_KEY")
@@ -18,3 +19,9 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_DIR = BASE_DIR / "media"
+PROFILE_PICS_DIR = MEDIA_DIR / "profile_images"
+PROFILE_PICS_DIR.mkdir(parents=True, exist_ok=True)

@@ -13,7 +13,7 @@ class Product(Base):
     category_id = Column(Integer,ForeignKey("categories.id") )
     category = relationship("Category", back_populates="products")
     price = Column(Numeric(10, 2))
-    # image = Column
+    # image = Column(String(500))
     stock = Column(Integer)
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default= datetime.utcnow)

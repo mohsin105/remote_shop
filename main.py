@@ -8,9 +8,11 @@ from api.v1.routes.products import router as product_router
 from api.v1.routes.users import router as user_router
 from api.v1.routes.orders import router as order_router
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from core.config import MEDIA_DIR
 
 # Review.__table__.drop(engine)
-Base.metadata.create_all(bind=engine)  
+# Base.metadata.create_all(bind=engine)  
 
 #THE FastAPI Project -> 
 app = FastAPI(
@@ -19,6 +21,10 @@ app = FastAPI(
     version= "1.0.0",
     # debug=True
 )
+
+app.mount("/media", 
+          StaticFiles(directory=str(MEDIA_DIR)),
+          name="media")
 
 #CORS Policy as Middleware -> 
 app.add_middleware(
