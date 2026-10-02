@@ -14,9 +14,11 @@ class Product(Base):
     category = relationship("Category", back_populates="products")
     price = Column(Numeric(10, 2))
     # image = Column(String(500))
+    # images = Column(Integer, ForeignKey("product"))
     stock = Column(Integer)
     created_at = Column(DateTime, default= datetime.utcnow)
     updated_at = Column(DateTime, default= datetime.utcnow)
+    # images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
     reviews = relationship("Review", back_populates="product")
 
 
@@ -58,5 +60,12 @@ class Review(Base):
         )
     )
 
+
 """
+class ProductImage(Base):
+    __tablename__ = "productimages"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"))
+    product = relationship("Product", back_populates="images")
+    image = Column(String(500), unique=True)
 """

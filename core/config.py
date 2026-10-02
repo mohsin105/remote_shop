@@ -25,3 +25,5 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_DIR = BASE_DIR / "media"
 PROFILE_PICS_DIR = MEDIA_DIR / "profile_images"
 PROFILE_PICS_DIR.mkdir(parents=True, exist_ok=True)
+
+ROOT_URL = "http://localhost:8000"

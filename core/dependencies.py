@@ -29,6 +29,7 @@ def get_token_payload(request: Request):
             algorithms=settings.ALGORITHM
         ) #decode the token and extract values encrypted inside it.
         # print("Token:", payload)
+        # print("Access token found atleast")
         username :str = payload.get("sub")
         role : str = payload.get("role")
         if username is None or role is None:
@@ -43,9 +44,11 @@ def get_token_payload(request: Request):
 
 def get_current_user(payload:dict = Depends(get_token_payload), db:Session = Depends(get_db)):
     """Gets info from token. Then fetches the User object from DB. returns the User"""
+    # print("Getting Current User")
     username = payload.get("username")
     userstmt = select(User).where(User.username == username)
     userObj = db.execute(userstmt).scalars().first()
+    # print("Current User Found, returning to Profile endpoint")
     return userObj
 
 #Role Checker -> 

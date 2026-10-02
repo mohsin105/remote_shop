@@ -9,6 +9,8 @@ from models.user import User
 from core.security import hash_password
 from core.dependencies import get_current_user, require_roles
 from services.user_service import UserService
+from fastapi. responses import FileResponse
+from core import config
 
 router = APIRouter(
     tags=["Users"]
@@ -66,7 +68,8 @@ def protected_route(current_user : dict = Depends(require_roles(["user", "admin"
 
 @router.get("/profile", response_model= UserSchema)
 def user_profile(current_user = Depends(get_current_user)):  
-    
+    print("User Profile Details -> ",current_user.profile_image)
+    current_user.profile_image = f"{config.ROOT_URL}/media/profile_images/{current_user.profile_image}"
     return current_user
 
 @router.post("/logout")
